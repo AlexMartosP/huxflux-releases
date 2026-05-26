@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Huxflux installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/AlexMartosP/huxflux/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/AlexMartosP/huxflux-releases/main/install.sh | bash -s
 set -euo pipefail
+
 
 # ── Colors & helpers ─────────────────────────────────────────────────────────
 if [ -t 1 ]; then
@@ -117,10 +118,14 @@ echo ""
 echo -e "  ${YELLOW}${BOLD}⚠ Security:${RESET} The auth token grants shell access to this machine."
 echo -e "  ${DIM}  Treat it like an SSH key. Run 'huxflux security' for full details.${RESET}"
 
-# ── Launch setup wizard ──────────────────────────────────────────────────────
+# ── Launch setup wizard ───────────────────────────────────────────────────────
 step "③ Setting up your environment"
 echo ""
-echo -e "  ${DIM}Launching interactive setup...${RESET}"
-echo ""
 
-exec huxflux setup
+# When piped from curl, stdin is the script not the terminal.
+# Launch setup in a fresh bash with proper TTY attached.
+if [ ! -t 0 ]; then
+  bash -c 'huxflux setup' </dev/tty
+else
+  huxflux setup
+fi
